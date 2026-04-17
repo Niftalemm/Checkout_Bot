@@ -1,0 +1,66 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clawbot-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////app/runtime/clawbot.db
+      UPLOADS_DIR: /app/runtime/uploads
+      PRICING_SHEET_PATH: /app/data/pricing_sheet.json
+      SCHEDULE_PATH: /app/data/schedule.json
+    ports:
+      - "8000:8000"
+    volumes:
+      - clawbot_runtime:/app/runtime
+      - ./data:/app/data
+    restart: unless-stopped
+
+  discord-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clawbot-discord-bot
+    command: python run_discord_bot.py
+    env_file:
+      - .env
+    environment:
+      CLAWBOT_API_BASE: http://api:8000/api
+      DATABASE_URL: sqlite:////app/runtime/clawbot.db
+      UPLOADS_DIR: /app/runtime/uploads
+      PRICING_SHEET_PATH: /app/data/pricing_sheet.json
+      SCHEDULE_PATH: /app/data/schedule.json
+    volumes:
+      - clawbot_runtime:/app/runtime
+      - ./data:/app/data
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  reminders:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clawbot-reminders
+    command: python -m app.reminders.runner
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////app/runtime/clawbot.db
+      UPLOADS_DIR: /app/runtime/uploads
+      PRICING_SHEET_PATH: /app/data/pricing_sheet.json
+      SCHEDULE_PATH: /app/data/schedule.json
+    volumes:
+      - clawbot_runtime:/app/runtime
+      - ./data:/app/data
+    depends_on:
+      - api
+    profiles:
+      - reminders
+    restart: unless-stopped
+
+volumes:
+  clawbot_runtime:

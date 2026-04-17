@@ -1,0 +1,16 @@
+{
+  "checkouts": [
+    {
+      "resident_name": "Alex Morgan",
+      "room_number": "104B",
+      "hall": "Maple Hall",
+      "checkout_at": "2026-04-17T09:00:00"
+    },
+    {
+      "resident_name": "Priya Shah",
+      "room_number": "212A",
+      "hall": "Oak Hall",
+      "checkout_at": "2026-04-17T10:30:00"
+    }
+  ]
+}
