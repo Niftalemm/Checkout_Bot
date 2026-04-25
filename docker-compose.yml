@@ -11,7 +11,9 @@ services:
       DATABASE_URL: sqlite:////app/runtime/clawbot.db
       UPLOADS_DIR: /app/runtime/uploads
       PRICING_SHEET_PATH: /app/data/pricing_sheet.json
+      FORM_MAPPING_PATH: /app/data/form_mapping.json
       SCHEDULE_PATH: /app/data/schedule.json
+      PLAYWRIGHT_STORAGE_STATE_PATH: /app/runtime/playwright/storage_state.json
     ports:
       - "8000:8000"
     volumes:
@@ -32,7 +34,9 @@ services:
       DATABASE_URL: sqlite:////app/runtime/clawbot.db
       UPLOADS_DIR: /app/runtime/uploads
       PRICING_SHEET_PATH: /app/data/pricing_sheet.json
+      FORM_MAPPING_PATH: /app/data/form_mapping.json
       SCHEDULE_PATH: /app/data/schedule.json
+      PLAYWRIGHT_STORAGE_STATE_PATH: /app/runtime/playwright/storage_state.json
     volumes:
       - clawbot_runtime:/app/runtime
       - ./data:/app/data
@@ -52,7 +56,9 @@ services:
       DATABASE_URL: sqlite:////app/runtime/clawbot.db
       UPLOADS_DIR: /app/runtime/uploads
       PRICING_SHEET_PATH: /app/data/pricing_sheet.json
+      FORM_MAPPING_PATH: /app/data/form_mapping.json
       SCHEDULE_PATH: /app/data/schedule.json
+      PLAYWRIGHT_STORAGE_STATE_PATH: /app/runtime/playwright/storage_state.json
     volumes:
       - clawbot_runtime:/app/runtime
       - ./data:/app/data

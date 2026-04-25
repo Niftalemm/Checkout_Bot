@@ -1,0 +1,456 @@
+{
+  "checkout_fields": {
+    "resident_name": "Resident Full Name",
+    "room_number": "Resident Room Number",
+    "tech_id": "Resident TechID",
+    "hall": "Which Hall?",
+    "staff_name": "Staff Name",
+    "room_side": "Which Side Of The Room Did The Resident Check Out Of?",
+    "has_damages": "Are There Any Damages In The Room?",
+    "has_bathroom": "Does This Room Have A Bathroom?"
+  },
+  "hall_options": {
+    "A": "A",
+    "B": "B",
+    "C": "C",
+    "D": "D"
+  },
+  "room_side_options": {
+    "left": "Left Side (When looking into the room)",
+    "right": "Right Side (When looking into the room)",
+    "single": "This is a single room."
+  },
+  "damage_sections": [
+    {
+      "key": "entry_door",
+      "name": "Entry Door",
+      "yes_no_question": "Is There Damage To The Entry Door? (Lock, Closure, Emergency Exit Sign, Peephole)",
+      "description_labels": [
+        "Entry Door Description",
+        "Describe The Damage To The Entry Door"
+      ],
+      "cost_labels": [
+        "Entry Door Cost",
+        "Entry Door Estimated Cost"
+      ],
+      "image_labels": [
+        "Entry Door Image",
+        "Upload Entry Door Image"
+      ],
+      "aliases": [
+        "entry door",
+        "door",
+        "lock",
+        "closure",
+        "door closer",
+        "emergency exit sign",
+        "exit sign",
+        "peephole",
+        "hinge"
+      ]
+    },
+    {
+      "key": "entry_surround",
+      "name": "Entry Surround",
+      "yes_no_question": "Is There Damage To The Entry Surround? (Tack-able Wall Surface, Room Number Plate)",
+      "description_labels": [
+        "Entry Surround Description",
+        "Describe The Damage To The Entry Surround"
+      ],
+      "cost_labels": [
+        "Entry Surround Cost",
+        "Entry Surround Estimated Cost"
+      ],
+      "image_labels": [
+        "Entry Surround Image",
+        "Upload Entry Surround Image"
+      ],
+      "aliases": [
+        "entry surround",
+        "outside entry",
+        "entry wall",
+        "room number",
+        "room number plate",
+        "tackable wall",
+        "tack-able wall",
+        "door frame"
+      ]
+    },
+    {
+      "key": "bathroom_door",
+      "name": "Bathroom Door",
+      "yes_no_question": "Is There Damage To The Bathroom Door?",
+      "description_labels": [
+        "Bathroom Door Description",
+        "Describe The Damage To The Bathroom Door"
+      ],
+      "cost_labels": [
+        "Bathroom Door Cost",
+        "Bathroom Door Estimated Cost"
+      ],
+      "image_labels": [
+        "Bathroom Door Image",
+        "Upload Bathroom Door Image"
+      ],
+      "aliases": [
+        "bathroom door",
+        "bathroom lock",
+        "bath door"
+      ]
+    },
+    {
+      "key": "closet",
+      "name": "Closet",
+      "yes_no_question": "Is There Damage To The Closet? (Shelf, Partition, Clothes Rod)",
+      "description_labels": [
+        "Closet Description",
+        "Describe The Damage To The Closet"
+      ],
+      "cost_labels": [
+        "Closet Cost",
+        "Closet Estimated Cost"
+      ],
+      "image_labels": [
+        "Closet Image",
+        "Upload Closet Image"
+      ],
+      "aliases": [
+        "closet",
+        "shelf",
+        "partition",
+        "clothes rod",
+        "hanging rod",
+        "cubby"
+      ]
+    },
+    {
+      "key": "loft",
+      "name": "Loft",
+      "yes_no_question": "Is There Damage To The Loft? (Platform, Safety Rail, Ends, Loft Base, Mattress)",
+      "description_labels": [
+        "Loft Description",
+        "Describe The Damage To The Loft"
+      ],
+      "cost_labels": [
+        "Loft Cost",
+        "Loft Estimated Cost"
+      ],
+      "image_labels": [
+        "Loft Image",
+        "Upload Loft Image"
+      ],
+      "aliases": [
+        "loft",
+        "platform",
+        "safety rail",
+        "guard rail",
+        "loft base",
+        "bed",
+        "mattress"
+      ]
+    },
+    {
+      "key": "dresser",
+      "name": "Dresser",
+      "yes_no_question": "Is There Damage To The Dresser? (Drawer, Pulls, Glides, Expandable Surfaces)",
+      "description_labels": [
+        "Dresser Description",
+        "Describe The Damage To The Dresser"
+      ],
+      "cost_labels": [
+        "Dresser Cost",
+        "Dresser Estimated Cost"
+      ],
+      "image_labels": [
+        "Dresser Image",
+        "Upload Dresser Image"
+      ],
+      "aliases": [
+        "dresser",
+        "dresser drawer",
+        "drawer",
+        "dresser glide",
+        "dresser pull"
+      ]
+    },
+    {
+      "key": "desk",
+      "name": "Desk",
+      "yes_no_question": "Is There Damage To The Desk? (Drawer, Pulls, Glides, Expandable Surfaces)",
+      "description_labels": [
+        "Desk Description",
+        "Describe The Damage To The Desk"
+      ],
+      "cost_labels": [
+        "Desk Cost",
+        "Desk Estimated Cost"
+      ],
+      "image_labels": [
+        "Desk Image",
+        "Upload Desk Image"
+      ],
+      "aliases": [
+        "desk",
+        "study table",
+        "desk drawer",
+        "desk glide",
+        "desk pull"
+      ]
+    },
+    {
+      "key": "desk_chair",
+      "name": "Desk Chair",
+      "yes_no_question": "Is There Damage To The Desk Chair? (Base, Seat, Casters, Swivel/Tilt Mechanism)",
+      "description_labels": [
+        "Desk Chair Description",
+        "Describe The Damage To The Desk Chair"
+      ],
+      "cost_labels": [
+        "Desk Chair Cost",
+        "Desk Chair Estimated Cost"
+      ],
+      "image_labels": [
+        "Desk Chair Image",
+        "Upload Desk Chair Image"
+      ],
+      "aliases": [
+        "desk chair",
+        "chair",
+        "casters",
+        "seat",
+        "swivel",
+        "tilt"
+      ]
+    },
+    {
+      "key": "window",
+      "name": "Window",
+      "yes_no_question": "Is There Damage To The Window? (Hardware, Glass, Screen)",
+      "description_labels": [
+        "Window Description",
+        "Describe The Damage To The Window"
+      ],
+      "cost_labels": [
+        "Window Cost",
+        "Window Estimated Cost"
+      ],
+      "image_labels": [
+        "Window Image",
+        "Upload Window Image"
+      ],
+      "aliases": [
+        "window",
+        "hardware",
+        "glass",
+        "screen",
+        "latch",
+        "hinge"
+      ]
+    },
+    {
+      "key": "blinds",
+      "name": "Blinds",
+      "yes_no_question": "Is There Damage To The Blinds? (Pull Cord, Slats, Head Rail)",
+      "description_labels": [
+        "Blinds Description",
+        "Describe The Damage To The Blinds"
+      ],
+      "cost_labels": [
+        "Blinds Cost",
+        "Blinds Estimated Cost"
+      ],
+      "image_labels": [
+        "Blinds Image",
+        "Upload Blinds Image"
+      ],
+      "aliases": [
+        "blind",
+        "blinds",
+        "pull cord",
+        "slat",
+        "slats",
+        "head rail",
+        "headrail",
+        "shade"
+      ]
+    },
+    {
+      "key": "heating_cooling",
+      "name": "Heating/Cooling",
+      "yes_no_question": "Is There Damage To The Heating/Cooling? (Radiator, Thermostat, Vent Covers)",
+      "description_labels": [
+        "Heating/Cooling Description",
+        "Describe The Damage To The Heating/Cooling"
+      ],
+      "cost_labels": [
+        "Heating/Cooling Cost",
+        "Heating/Cooling Estimated Cost"
+      ],
+      "image_labels": [
+        "Heating/Cooling Image",
+        "Upload Heating/Cooling Image"
+      ],
+      "aliases": [
+        "heating",
+        "cooling",
+        "hvac",
+        "radiator",
+        "thermostat",
+        "vent cover",
+        "air conditioner",
+        "ac",
+        "a/c",
+        "heater"
+      ]
+    },
+    {
+      "key": "electrical",
+      "name": "Electrical",
+      "yes_no_question": "Is There Damage To The Electrical? (Switches, Outlets, Light Fixtures)",
+      "description_labels": [
+        "Electrical Description",
+        "Describe The Damage To The Electrical"
+      ],
+      "cost_labels": [
+        "Electrical Cost",
+        "Electrical Estimated Cost"
+      ],
+      "image_labels": [
+        "Electrical Image",
+        "Upload Electrical Image"
+      ],
+      "aliases": [
+        "electrical",
+        "switch",
+        "switches",
+        "outlet",
+        "outlets",
+        "cover",
+        "plate"
+      ]
+    },
+    {
+      "key": "lighting",
+      "name": "Lighting",
+      "yes_no_question": "Is There Damage To The Lighting? (Switches, Outlets, Light Fixtures)",
+      "description_labels": [
+        "Lighting Description",
+        "Describe The Damage To The Lighting"
+      ],
+      "cost_labels": [
+        "Lighting Cost",
+        "Lighting Estimated Cost"
+      ],
+      "image_labels": [
+        "Lighting Image",
+        "Upload Lighting Image"
+      ],
+      "aliases": [
+        "lighting",
+        "light",
+        "lights",
+        "light fixture",
+        "fixture",
+        "light cover",
+        "ceiling light"
+      ]
+    },
+    {
+      "key": "fire_safety",
+      "name": "Fire Safety",
+      "yes_no_question": "Is There Damage To The Fire Safety? (Sprinkler Heads, Smoke Detector)",
+      "description_labels": [
+        "Fire Safety Description",
+        "Describe The Damage To The Fire Safety"
+      ],
+      "cost_labels": [
+        "Fire Safety Cost",
+        "Fire Safety Estimated Cost"
+      ],
+      "image_labels": [
+        "Fire Safety Image",
+        "Upload Fire Safety Image"
+      ],
+      "aliases": [
+        "fire safety",
+        "sprinkler",
+        "sprinkler head",
+        "smoke detector",
+        "fire"
+      ]
+    },
+    {
+      "key": "wall_surfaces",
+      "name": "Wall Surfaces",
+      "yes_no_question": "Is There Damage To The Wall Surfaces? (Base Molding, Drywall, Paint Chip)",
+      "description_labels": [
+        "Wall Surfaces Description",
+        "Describe The Damage To The Wall Surfaces"
+      ],
+      "cost_labels": [
+        "Wall Surfaces Cost",
+        "Wall Surfaces Estimated Cost"
+      ],
+      "image_labels": [
+        "Wall Surfaces Image",
+        "Upload Wall Surfaces Image"
+      ],
+      "aliases": [
+        "wall",
+        "walls",
+        "base molding",
+        "drywall",
+        "sheetrock",
+        "paint chip",
+        "bulletin board",
+        "graffiti"
+      ]
+    },
+    {
+      "key": "floor_surfaces",
+      "name": "Floor Surfaces",
+      "yes_no_question": "Is There Damage To The Floor Surfaces? (Vinyl Tile, Ceramic Tile, Door Thresholds, Floor Drain)",
+      "description_labels": [
+        "Floor Surfaces Description",
+        "Describe The Damage To The Floor Surfaces"
+      ],
+      "cost_labels": [
+        "Floor Surfaces Cost",
+        "Floor Surfaces Estimated Cost"
+      ],
+      "image_labels": [
+        "Floor Surfaces Image",
+        "Upload Floor Surfaces Image"
+      ],
+      "aliases": [
+        "floor",
+        "vinyl tile",
+        "ceramic tile",
+        "tile",
+        "threshold",
+        "floor drain"
+      ]
+    },
+    {
+      "key": "ceiling",
+      "name": "Ceiling",
+      "yes_no_question": "Is There Damage To The Ceiling?",
+      "description_labels": [
+        "Ceiling Description",
+        "Describe The Damage To The Ceiling"
+      ],
+      "cost_labels": [
+        "Ceiling Cost",
+        "Ceiling Estimated Cost"
+      ],
+      "image_labels": [
+        "Ceiling Image",
+        "Upload Ceiling Image"
+      ],
+      "aliases": [
+        "ceiling",
+        "ceiling tile"
+      ]
+    }
+  ]
+}

@@ -9,13 +9,22 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./clawbot.db"
     uploads_dir: str = "uploads"
     pricing_sheet_path: str = "data/pricing_sheet.json"
+    form_mapping_path: str = "data/form_mapping.json"
     schedule_path: str = "data/schedule.json"
     discord_bot_token: str = ""
     discord_guild_id: int | None = None
     discord_channel_id: int | None = None
     microsoft_form_url: str = ""
-    auto_fill_on_complete: bool = True
+    playwright_storage_state_path: str = "runtime/playwright/storage_state.json"
+    playwright_headless: bool = False
+    playwright_manual_review_timeout_seconds: int = 900
+    default_has_bathroom: bool = True
+    auto_fill_on_complete: bool = False
     voice_note_require_text: bool = True
+    groq_api_key: str = ""
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    groq_model: str = "openai/gpt-oss-20b"
+    groq_timeout_seconds: int = 20
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
