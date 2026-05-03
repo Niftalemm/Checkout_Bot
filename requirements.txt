@@ -6,3 +6,4 @@ python-multipart
 discord.py
 playwright
 httpx
+apscheduler

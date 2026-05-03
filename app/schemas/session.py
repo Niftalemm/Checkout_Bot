@@ -82,6 +82,7 @@ class SessionResponse(BaseModel):
     form_fill_error: str | None
     form_fill_result: str | None
     draft_saved: bool
+    scheduled_checkout_id: str | None
     created_at: datetime
 
 
@@ -98,20 +99,22 @@ class DamageSuggestion(BaseModel):
 
 
 class PendingDamageCaptureResponse(BaseModel):
+    status: str = "pending"
+    awaiting_description: bool = False
     capture_id: int
-    original_description: str
-    cleaned_description: str
-    quantity: int
-    unit_cost: float
-    total_cost: float
-    chargeable: bool
-    guessed_category_key: str
-    guessed_category_name: str
-    guessed_confidence: float
-    estimated_cost: float
-    suggestions: list[DamageSuggestion]
-    requires_explicit_choice: bool
-    prompt: str
+    original_description: str | None = None
+    cleaned_description: str | None = None
+    quantity: int | None = None
+    unit_cost: float | None = None
+    total_cost: float | None = None
+    chargeable: bool | None = None
+    guessed_category_key: str | None = None
+    guessed_category_name: str | None = None
+    guessed_confidence: float | None = None
+    estimated_cost: float | None = None
+    suggestions: list[DamageSuggestion] = Field(default_factory=list)
+    requires_explicit_choice: bool = False
+    prompt: str = ""
     image_count: int = 0
 
 
@@ -121,17 +124,19 @@ class DamageConfirmRequest(BaseModel):
 
 
 class PendingCaptureState(BaseModel):
+    status: str = "pending"
+    awaiting_description: bool = False
     capture_id: int
-    original_description: str
-    cleaned_description: str
-    quantity: int
-    unit_cost: float
-    total_cost: float
-    chargeable: bool
-    guessed_category_key: str
-    guessed_category_name: str
-    guessed_confidence: float
-    suggestions: list[DamageSuggestion]
+    original_description: str | None = None
+    cleaned_description: str | None = None
+    quantity: int | None = None
+    unit_cost: float | None = None
+    total_cost: float | None = None
+    chargeable: bool | None = None
+    guessed_category_key: str | None = None
+    guessed_category_name: str | None = None
+    guessed_confidence: float | None = None
+    suggestions: list[DamageSuggestion] = Field(default_factory=list)
     image_count: int = 0
 
 
@@ -238,6 +243,118 @@ class CompleteSessionResponse(BaseModel):
     item_count: int
     message: str
     form_fill_result: dict[str, Any] | None = None
+
+
+class ScheduledCheckoutBase(BaseModel):
+    resident_name: str = Field(..., min_length=1, max_length=120)
+    room_number: str = Field(..., min_length=1, max_length=20)
+    tech_id: str = Field(..., min_length=1, max_length=40)
+    hall: str
+    room_side: str
+    checkout_date: str = Field(..., min_length=10, max_length=10)
+    checkout_time: str = Field(..., min_length=4, max_length=5)
+
+    @field_validator("resident_name", "room_number", "tech_id", "checkout_date", "checkout_time", mode="before")
+    @classmethod
+    def _strip_schedule_text(cls, value: str) -> str:
+        if value is None:
+            raise ValueError("This field is required.")
+        normalized = str(value).strip()
+        if not normalized:
+            raise ValueError("This field is required.")
+        return normalized
+
+    @field_validator("hall", mode="before")
+    @classmethod
+    def _schedule_hall(cls, value: str) -> str:
+        return SessionDetailsBase._normalize_hall(value)
+
+    @field_validator("room_side", mode="before")
+    @classmethod
+    def _schedule_room_side(cls, value: str) -> str:
+        return SessionDetailsBase._normalize_room_side(value)
+
+
+class ScheduledCheckoutCreateRequest(ScheduledCheckoutBase):
+    creator_discord_user_id: str = Field(..., min_length=1, max_length=80)
+    creator_display_name: str = Field(..., min_length=1, max_length=120)
+    discord_channel_id: str = Field(..., min_length=1, max_length=80)
+
+
+class ScheduledCheckoutUpdateRequest(BaseModel):
+    resident_name: str | None = Field(None, min_length=1, max_length=120)
+    room_number: str | None = Field(None, min_length=1, max_length=20)
+    tech_id: str | None = Field(None, min_length=1, max_length=40)
+    hall: str | None = None
+    room_side: str | None = None
+    checkout_date: str | None = Field(None, min_length=10, max_length=10)
+    checkout_time: str | None = Field(None, min_length=4, max_length=5)
+    creator_discord_user_id: str = Field(..., min_length=1, max_length=80)
+
+    @field_validator("resident_name", "room_number", "tech_id", "checkout_date", "checkout_time", mode="before")
+    @classmethod
+    def _strip_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        if not normalized:
+            raise ValueError("This field cannot be empty.")
+        return normalized
+
+    @field_validator("hall", mode="before")
+    @classmethod
+    def _optional_hall(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return SessionDetailsBase._normalize_hall(value)
+
+    @field_validator("room_side", mode="before")
+    @classmethod
+    def _optional_room_side(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return SessionDetailsBase._normalize_room_side(value)
+
+
+class ScheduledCheckoutStartRequest(BaseModel):
+    creator_discord_user_id: str = Field(..., min_length=1, max_length=80)
+    creator_display_name: str = Field(..., min_length=1, max_length=120)
+    discord_channel_id: str = Field(..., min_length=1, max_length=80)
+
+
+class ScheduledCheckoutCancelRequest(BaseModel):
+    creator_discord_user_id: str = Field(..., min_length=1, max_length=80)
+
+
+class ScheduledCheckoutResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    resident_name: str
+    tech_id: str
+    room_number: str
+    hall: str
+    room_side: str
+    checkout_time: datetime
+    timezone: str
+    creator_discord_user_id: str
+    creator_display_name: str
+    discord_channel_id: str
+    status: str
+    reminder_30_sent: bool
+    reminder_10_sent: bool
+    reminder_at_time_sent: bool
+    ready_to_start_notified: bool
+    started_session_id: int | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class ScheduledCheckoutStartResponse(BaseModel):
+    status: str
+    message: str
+    schedule: ScheduledCheckoutResponse
+    session: SessionResponse | None = None
 
 
 class DamageItemUpdateDescriptionRequest(BaseModel):

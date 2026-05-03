@@ -14,10 +14,13 @@ services:
       FORM_MAPPING_PATH: /app/data/form_mapping.json
       SCHEDULE_PATH: /app/data/schedule.json
       PLAYWRIGHT_STORAGE_STATE_PATH: /app/runtime/playwright/storage_state.json
+      PLAYWRIGHT_HEADLESS: "true"
+      PLAYWRIGHT_AUTO_SUBMIT_HEADLESS: "true"
     ports:
       - "8000:8000"
     volumes:
       - clawbot_runtime:/app/runtime
+      - ./runtime/playwright:/app/runtime/playwright
       - ./data:/app/data
     restart: unless-stopped
 
@@ -31,14 +34,18 @@ services:
       - .env
     environment:
       CLAWBOT_API_BASE: http://api:8000/api
+      CLAWBOT_REVIEW_BASE: http://localhost:8000
       DATABASE_URL: sqlite:////app/runtime/clawbot.db
       UPLOADS_DIR: /app/runtime/uploads
       PRICING_SHEET_PATH: /app/data/pricing_sheet.json
       FORM_MAPPING_PATH: /app/data/form_mapping.json
       SCHEDULE_PATH: /app/data/schedule.json
       PLAYWRIGHT_STORAGE_STATE_PATH: /app/runtime/playwright/storage_state.json
+      PLAYWRIGHT_HEADLESS: "true"
+      PLAYWRIGHT_AUTO_SUBMIT_HEADLESS: "true"
     volumes:
       - clawbot_runtime:/app/runtime
+      - ./runtime/playwright:/app/runtime/playwright
       - ./data:/app/data
     depends_on:
       - api
@@ -59,8 +66,11 @@ services:
       FORM_MAPPING_PATH: /app/data/form_mapping.json
       SCHEDULE_PATH: /app/data/schedule.json
       PLAYWRIGHT_STORAGE_STATE_PATH: /app/runtime/playwright/storage_state.json
+      PLAYWRIGHT_HEADLESS: "true"
+      PLAYWRIGHT_AUTO_SUBMIT_HEADLESS: "true"
     volumes:
       - clawbot_runtime:/app/runtime
+      - ./runtime/playwright:/app/runtime/playwright
       - ./data:/app/data
     depends_on:
       - api

@@ -14,8 +14,8 @@ Discord-first room checkout assistant with FastAPI, SQLite, private local image 
 - Quantity-aware pricing estimate suggestions
 - Session summary and checkout review approval flow in Discord
 - Microsoft Form draft preparation for the exact live form
-- Playwright workflow that reuses saved Microsoft auth state and stops before final submit
-- Reminder support from schedule JSON file
+- Playwright workflow that reuses saved Microsoft auth state, fills the live form, and submits automatically in headless Docker runs
+- Scheduled checkout reminders from the Discord bot with Start/Edit/Cancel buttons
 - Modular integration layout for future Telegram channel support
 
 ## Project structure
@@ -73,10 +73,12 @@ requirements.txt
 1. Create `.env` from template and fill required values:
    - `copy .env.example .env`
    - Set `DISCORD_BOT_TOKEN` and `MICROSOFT_FORM_URL`
-2. Build and start API + Discord bot:
+2. Authenticate once for the live Microsoft Form session from your host machine:
+   - `python -m app.integrations.playwright.auth_session`
+   - Sign in to Microsoft in the browser window, open the live form, then press Enter in the terminal.
+   - This creates `runtime/playwright/storage_state.json`, which Docker mounts into the app container.
+3. Build and start API + Discord bot:
    - `docker compose up --build -d`
-3. Optional: start reminders service too:
-   - `docker compose --profile reminders up --build -d`
 4. View logs:
    - `docker compose logs -f api`
    - `docker compose logs -f discord-bot`
@@ -86,7 +88,9 @@ requirements.txt
 Notes:
 - API is available at `http://localhost:8000`
 - SQLite DB + uploaded images persist in Docker volume `clawbot_runtime`
-- Edit `data/schedule.json` on host; containers read it via bind mount
+- Docker Compose runs Playwright with `PLAYWRIGHT_HEADLESS=true` and `PLAYWRIGHT_AUTO_SUBMIT_HEADLESS=true` because containers do not have a desktop display. Use the non-Docker local run with `PLAYWRIGHT_HEADLESS=false` if you need the filled Microsoft Form to stay open for manual review before submit.
+- The Discord bot polls scheduled checkouts and posts due reminders automatically.
+- The separate reminders profile is still available for legacy/manual runs with `STANDALONE_REMINDERS_ENABLED=true`, but normal use only needs API + Discord bot.
 
 ## Run services
 
@@ -143,6 +147,8 @@ Notes:
   - Returns confirmed item count + estimated total.
 - `/prepare_form [session_id]`
   - Builds form draft only (no browser fill).
+- `/review_page [session_id]`
+  - Sends the lightweight web UI link for review, scheduling, damage edits, and Microsoft Form fill status.
 - `/fill_form_draft [session_id]`
   - Retries the live Playwright fill for a session.
 - `/complete_checkout`
@@ -152,6 +158,16 @@ Notes:
   - Reply `3` to cancel the checkout.
 - `/cancel_checkout`
   - Cancels the active checkout in the current channel.
+- `/schedule_checkout`
+  - Opens a pop-up form to schedule a future checkout in Central time.
+  - Use `Hall|Side` like `A|left`.
+  - Use date/time like `2026-05-01 14:30`.
+- `/my_schedule`
+  - Shows your upcoming scheduled checkouts with Start, Edit, and Cancel buttons.
+- `/edit_scheduled_checkout`
+  - Edits a scheduled checkout by ID when you want to update fields from the command line.
+- `/cancel_scheduled_checkout`
+  - Cancels a scheduled checkout by ID.
 
 ## Pricing and matching
 
@@ -199,13 +215,15 @@ Pricing schema (v2):
    - reply with the number of the category you want
 4. Run `/complete_checkout` to get a review summary in Discord.
 5. Reply `1` to fill the live Microsoft Form.
-6. Review the live form in the opened browser window and click Submit manually.
+6. In Docker/headless mode, Clawbot submits the live Microsoft Form after a clean fill. In local headed mode, review the opened browser window and click Submit manually.
 
 ## Microsoft auth session
 
 - The live form fill reuses Playwright storage state from `PLAYWRIGHT_STORAGE_STATE_PATH`.
 - Authenticate once by running:
   - `python -m app.integrations.playwright.auth_session`
+- If you run the app with Docker Compose, run this command on your host machine, not inside the container. The browser login is saved to `runtime/playwright/storage_state.json`, and Docker mounts that folder at `/app/runtime/playwright`.
+- Docker Compose fills and submits forms in headless mode to avoid the container X server error. Headed/manual browser review needs a local non-Docker API run or a container display setup such as Xvfb/VNC.
 - The auth state file should stay in a private gitignored path such as `runtime/playwright/storage_state.json`.
 
 ## Hosting and security notes
@@ -230,13 +248,19 @@ Pricing schema (v2):
 10. Reply `2`, then add another damage, and confirm editing still works.
 11. Run `/complete_checkout` again and reply `1`.
 12. Start another checkout, use `/cancel_checkout`, and confirm the active session is removed.
-13. Verify the live Microsoft Form opens while logged in, fills the exact sections, and stops before submit.
+13. Verify the live Microsoft Form fills the exact sections and records a submit result.
 14. Close the browser and confirm the session records `success`, `partial_failure`, or `failed` cleanly instead of crashing.
 
-## Reminder schedule
+## Scheduled checkout reminders
 
-- Edit `data/schedule.json` with upcoming checkout timestamps (ISO format).
-- Runner checks every 60 seconds and prints reminders for next hour.
+- Create scheduled checkouts with `/schedule_checkout` or from the review page UI.
+- The Discord bot checks for due reminders about every 45 seconds.
+- At checkout time, the bot posts the scheduled checkout card in the original Discord channel with Start, Edit, and Cancel buttons.
+
+## Lightweight UI
+
+- Open `/api/review/{session_id}` from `/review_page`.
+- The page shows session details, damage edits, schedule controls, Microsoft Form fill status, and retry/open-form actions.
 
 ## Next extension points
 

@@ -18,6 +18,7 @@ class DamageAIResult:
 
 
 class DamageAIService:
+    SUPPORTED_AUDIO_EXTENSIONS = {".flac", ".mp3", ".mp4", ".mpeg", ".mpga", ".m4a", ".ogg", ".wav", ".webm"}
     NO_CHARGE_PATTERNS = [
         r"\bno charge\b",
         r"\bno cost\b",
@@ -76,14 +77,69 @@ class DamageAIService:
         "in",
     }
 
-    def __init__(self, api_key: str, base_url: str, model: str, timeout_seconds: int = 20):
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str,
+        model: str,
+        timeout_seconds: int = 20,
+        transcription_model: str = "whisper-large-v3-turbo",
+    ):
         self.api_key = api_key.strip()
         self.base_url = base_url.rstrip("/")
         self.model = model.strip()
         self.timeout_seconds = timeout_seconds
+        self.transcription_model = transcription_model.strip()
 
     def is_enabled(self) -> bool:
         return bool(self.api_key and self.model)
+
+    def can_transcribe_audio(self) -> bool:
+        return bool(self.api_key and self.transcription_model)
+
+    def transcribe_audio(self, file_name: str, payload: bytes, content_type: str | None = None) -> str:
+        if not self.can_transcribe_audio():
+            raise ValueError("Voice note transcription is not configured yet.")
+        if not payload:
+            raise ValueError("The voice note was empty.")
+
+        normalized_name = file_name or "voice-note.m4a"
+        extension = normalized_name.rsplit(".", 1)[-1].lower() if "." in normalized_name else ""
+        if f".{extension}" not in self.SUPPORTED_AUDIO_EXTENSIONS:
+            raise ValueError("Voice note must be an audio file such as OGG, M4A, WAV, MP3, or WEBM.")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+        }
+        files = {
+            "file": (normalized_name, payload, content_type or "application/octet-stream"),
+        }
+        data = {
+            "model": self.transcription_model,
+            "response_format": "json",
+            "language": "en",
+            "temperature": "0",
+        }
+
+        try:
+            with httpx.Client(timeout=max(self.timeout_seconds, 60)) as client:
+                response = client.post(
+                    f"{self.base_url}/audio/transcriptions",
+                    headers=headers,
+                    data=data,
+                    files=files,
+                )
+                response.raise_for_status()
+                body = response.json()
+        except httpx.HTTPStatusError as exc:
+            raise ValueError("I could not transcribe that voice note right now.") from exc
+        except Exception as exc:
+            raise ValueError("I could not transcribe that voice note right now.") from exc
+
+        transcript = str(body.get("text") or "").strip()
+        if not transcript:
+            raise ValueError("I could not hear a usable description in that voice note.")
+        return transcript
 
     def analyze_damage(self, raw_note: str) -> DamageAIResult:
         fallback = self.fallback_analyze(raw_note)

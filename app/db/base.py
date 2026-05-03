@@ -54,6 +54,9 @@ def bootstrap_database() -> None:
                 "ALTER TABLE checkout_sessions ADD COLUMN draft_saved "
                 "BOOLEAN NOT NULL DEFAULT 0"
             ),
+            "scheduled_checkout_id": (
+                "ALTER TABLE checkout_sessions ADD COLUMN scheduled_checkout_id VARCHAR(36)"
+            ),
         },
     )
     _apply_column_migrations(
@@ -104,6 +107,7 @@ def bootstrap_database() -> None:
     _backfill_damage_costs()
     _backfill_pending_damage_costs()
     _backfill_pending_damage_images()
+    _ensure_scheduled_checkouts_table()
 
 
 def _backfill_damage_images() -> None:
@@ -202,6 +206,43 @@ def _backfill_pending_damage_images() -> None:
                 )
             )
         db.commit()
+
+
+def _ensure_scheduled_checkouts_table() -> None:
+    inspector = inspect(engine)
+    if "scheduled_checkouts" in inspector.get_table_names():
+        return
+
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "CREATE TABLE scheduled_checkouts ("
+                "id VARCHAR(36) PRIMARY KEY NOT NULL, "
+                "resident_name VARCHAR(120) NOT NULL, "
+                "tech_id VARCHAR(40) NOT NULL, "
+                "room_number VARCHAR(20) NOT NULL, "
+                "hall VARCHAR(80) NOT NULL, "
+                "room_side VARCHAR(20) NOT NULL, "
+                "checkout_time DATETIME NOT NULL, "
+                "timezone VARCHAR(64) NOT NULL DEFAULT 'America/Chicago', "
+                "creator_discord_user_id VARCHAR(80) NOT NULL, "
+                "creator_display_name VARCHAR(120) NOT NULL, "
+                "discord_channel_id VARCHAR(80) NOT NULL, "
+                "status VARCHAR(40) NOT NULL DEFAULT 'scheduled', "
+                "reminder_30_sent BOOLEAN NOT NULL DEFAULT 0, "
+                "reminder_10_sent BOOLEAN NOT NULL DEFAULT 0, "
+                "reminder_at_time_sent BOOLEAN NOT NULL DEFAULT 0, "
+                "ready_to_start_notified BOOLEAN NOT NULL DEFAULT 0, "
+                "started_session_id INTEGER, "
+                "created_at DATETIME NOT NULL, "
+                "updated_at DATETIME NOT NULL"
+                ")"
+            )
+        )
+        connection.execute(text("CREATE INDEX ix_scheduled_checkouts_checkout_time ON scheduled_checkouts (checkout_time)"))
+        connection.execute(text("CREATE INDEX ix_scheduled_checkouts_status ON scheduled_checkouts (status)"))
+        connection.execute(text("CREATE INDEX ix_scheduled_checkouts_creator_discord_user_id ON scheduled_checkouts (creator_discord_user_id)"))
+        connection.execute(text("CREATE INDEX ix_scheduled_checkouts_discord_channel_id ON scheduled_checkouts (discord_channel_id)"))
 
 
 def get_db():

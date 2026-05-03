@@ -24,7 +24,10 @@
     {
       "key": "entry_door",
       "name": "Entry Door",
-      "yes_no_question": "Is There Damage To The Entry Door? (Lock, Closure, Emergency Exit Sign, Peephole)",
+      "yes_no_question": "Is There Damage To The Entry Door? (Lock, Peephole, Closing)",
+      "question_aliases": [
+        "Is There Damage To The Entry Door? (Lock, Closure, Emergency Exit Sign, Peephole)"
+      ],
       "description_labels": [
         "Entry Door Description",
         "Describe The Damage To The Entry Door"
@@ -51,8 +54,11 @@
     },
     {
       "key": "entry_surround",
-      "name": "Entry Surround",
-      "yes_no_question": "Is There Damage To The Entry Surround? (Tack-able Wall Surface, Room Number Plate)",
+      "name": "Outside Entry",
+      "yes_no_question": "Is There Damage To The Outside Entry? (Wall Surface & Room Number)",
+      "question_aliases": [
+        "Is There Damage To The Entry Surround? (Tack-able Wall Surface, Room Number Plate)"
+      ],
       "description_labels": [
         "Entry Surround Description",
         "Describe The Damage To The Entry Surround"
@@ -80,6 +86,7 @@
       "key": "bathroom_door",
       "name": "Bathroom Door",
       "yes_no_question": "Is There Damage To The Bathroom Door?",
+      "live_form_enabled": false,
       "description_labels": [
         "Bathroom Door Description",
         "Describe The Damage To The Bathroom Door"
@@ -101,7 +108,10 @@
     {
       "key": "closet",
       "name": "Closet",
-      "yes_no_question": "Is There Damage To The Closet? (Shelf, Partition, Clothes Rod)",
+      "yes_no_question": "Is There Damage To The Closet?",
+      "question_aliases": [
+        "Is There Damage To The Closet? (Shelf, Partition, Clothes Rod)"
+      ],
       "description_labels": [
         "Closet Description",
         "Describe The Damage To The Closet"
@@ -125,8 +135,11 @@
     },
     {
       "key": "loft",
-      "name": "Loft",
-      "yes_no_question": "Is There Damage To The Loft? (Platform, Safety Rail, Ends, Loft Base, Mattress)",
+      "name": "Loft/Mattress",
+      "yes_no_question": "Is There Damage To The Loft/Mattress? (Safety Rail, Platform, End, Mattress)",
+      "question_aliases": [
+        "Is There Damage To The Loft? (Platform, Safety Rail, Ends, Loft Base, Mattress)"
+      ],
       "description_labels": [
         "Loft Description",
         "Describe The Damage To The Loft"
@@ -152,7 +165,10 @@
     {
       "key": "dresser",
       "name": "Dresser",
-      "yes_no_question": "Is There Damage To The Dresser? (Drawer, Pulls, Glides, Expandable Surfaces)",
+      "yes_no_question": "Is There Damage To The Dresser?",
+      "question_aliases": [
+        "Is There Damage To The Dresser? (Drawer, Pulls, Glides, Expandable Surfaces)"
+      ],
       "description_labels": [
         "Dresser Description",
         "Describe The Damage To The Dresser"
@@ -176,7 +192,10 @@
     {
       "key": "desk",
       "name": "Desk",
-      "yes_no_question": "Is There Damage To The Desk? (Drawer, Pulls, Glides, Expandable Surfaces)",
+      "yes_no_question": "Is There Damage To The Desk?",
+      "question_aliases": [
+        "Is There Damage To The Desk? (Drawer, Pulls, Glides, Expandable Surfaces)"
+      ],
       "description_labels": [
         "Desk Description",
         "Describe The Damage To The Desk"
@@ -200,7 +219,10 @@
     {
       "key": "desk_chair",
       "name": "Desk Chair",
-      "yes_no_question": "Is There Damage To The Desk Chair? (Base, Seat, Casters, Swivel/Tilt Mechanism)",
+      "yes_no_question": "Is There Damage To The Desk Chair?",
+      "question_aliases": [
+        "Is There Damage To The Desk Chair? (Base, Seat, Casters, Swivel/Tilt Mechanism)"
+      ],
       "description_labels": [
         "Desk Chair Description",
         "Describe The Damage To The Desk Chair"
@@ -225,7 +247,10 @@
     {
       "key": "window",
       "name": "Window",
-      "yes_no_question": "Is There Damage To The Window? (Hardware, Glass, Screen)",
+      "yes_no_question": "Is There Damage To The Window?",
+      "question_aliases": [
+        "Is There Damage To The Window? (Hardware, Glass, Screen)"
+      ],
       "description_labels": [
         "Window Description",
         "Describe The Damage To The Window"
@@ -250,7 +275,10 @@
     {
       "key": "blinds",
       "name": "Blinds",
-      "yes_no_question": "Is There Damage To The Blinds? (Pull Cord, Slats, Head Rail)",
+      "yes_no_question": "Is There Damage To The Blinds?",
+      "question_aliases": [
+        "Is There Damage To The Blinds? (Pull Cord, Slats, Head Rail)"
+      ],
       "description_labels": [
         "Blinds Description",
         "Describe The Damage To The Blinds"
@@ -277,7 +305,10 @@
     {
       "key": "heating_cooling",
       "name": "Heating/Cooling",
-      "yes_no_question": "Is There Damage To The Heating/Cooling? (Radiator, Thermostat, Vent Covers)",
+      "yes_no_question": "Is There Damage To The Heating & Cooling (Radiator, Thermostat, AC Unit)?",
+      "question_aliases": [
+        "Is There Damage To The Heating/Cooling? (Radiator, Thermostat, Vent Covers)"
+      ],
       "description_labels": [
         "Heating/Cooling Description",
         "Describe The Damage To The Heating/Cooling"
@@ -306,7 +337,10 @@
     {
       "key": "electrical",
       "name": "Electrical",
-      "yes_no_question": "Is There Damage To The Electrical? (Switches, Outlets, Light Fixtures)",
+      "yes_no_question": "Is There Damage To The Electrical (Outlets, Switches, Light Fixtures) ?",
+      "question_aliases": [
+        "Is There Damage To The Electrical? (Switches, Outlets, Light Fixtures)"
+      ],
       "description_labels": [
         "Electrical Description",
         "Describe The Damage To The Electrical"
@@ -331,8 +365,11 @@
     },
     {
       "key": "lighting",
-      "name": "Lighting",
-      "yes_no_question": "Is There Damage To The Lighting? (Switches, Outlets, Light Fixtures)",
+      "name": "Services Outlet",
+      "yes_no_question": "Is There Damage To The Services Outlet? (Cable Hookup, Internet Outlet, Phone Outlet)",
+      "question_aliases": [
+        "Is There Damage To The Lighting? (Switches, Outlets, Light Fixtures)"
+      ],
       "description_labels": [
         "Lighting Description",
         "Describe The Damage To The Lighting"
@@ -358,7 +395,10 @@
     {
       "key": "fire_safety",
       "name": "Fire Safety",
-      "yes_no_question": "Is There Damage To The Fire Safety? (Sprinkler Heads, Smoke Detector)",
+      "yes_no_question": "Is There Damage To Smoke Detector or Sprinkler Heads?",
+      "question_aliases": [
+        "Is There Damage To The Fire Safety? (Sprinkler Heads, Smoke Detector)"
+      ],
       "description_labels": [
         "Fire Safety Description",
         "Describe The Damage To The Fire Safety"
@@ -382,7 +422,10 @@
     {
       "key": "wall_surfaces",
       "name": "Wall Surfaces",
-      "yes_no_question": "Is There Damage To The Wall Surfaces? (Base Molding, Drywall, Paint Chip)",
+      "yes_no_question": "Is There Damages To Wall Surfaces?",
+      "question_aliases": [
+        "Is There Damage To The Wall Surfaces? (Base Molding, Drywall, Paint Chip)"
+      ],
       "description_labels": [
         "Wall Surfaces Description",
         "Describe The Damage To The Wall Surfaces"
@@ -409,7 +452,10 @@
     {
       "key": "floor_surfaces",
       "name": "Floor Surfaces",
-      "yes_no_question": "Is There Damage To The Floor Surfaces? (Vinyl Tile, Ceramic Tile, Door Thresholds, Floor Drain)",
+      "yes_no_question": "Is There Damages To Floor Surfaces?",
+      "question_aliases": [
+        "Is There Damage To The Floor Surfaces? (Vinyl Tile, Ceramic Tile, Door Thresholds, Floor Drain)"
+      ],
       "description_labels": [
         "Floor Surfaces Description",
         "Describe The Damage To The Floor Surfaces"
@@ -434,7 +480,10 @@
     {
       "key": "ceiling",
       "name": "Ceiling",
-      "yes_no_question": "Is There Damage To The Ceiling?",
+      "yes_no_question": "Is There Damages To Ceiling Surfaces?",
+      "question_aliases": [
+        "Is There Damage To The Ceiling?"
+      ],
       "description_labels": [
         "Ceiling Description",
         "Describe The Damage To The Ceiling"
@@ -450,6 +499,96 @@
       "aliases": [
         "ceiling",
         "ceiling tile"
+      ]
+    },
+    {
+      "key": "sink",
+      "name": "Sink",
+      "yes_no_question": "Is There Damages To The Sink?",
+      "description_labels": [
+        "Sink Description",
+        "Describe The Damage To The Sink"
+      ],
+      "cost_labels": [
+        "Sink Cost",
+        "Sink Estimated Cost"
+      ],
+      "image_labels": [
+        "Sink Image",
+        "Upload Sink Image"
+      ],
+      "aliases": [
+        "sink",
+        "faucet",
+        "tap",
+        "medicine cabinet",
+        "mirror"
+      ]
+    },
+    {
+      "key": "shower",
+      "name": "Shower",
+      "yes_no_question": "Is There Damages To The Shower?",
+      "description_labels": [
+        "Shower Description",
+        "Describe The Damage To The Shower"
+      ],
+      "cost_labels": [
+        "Shower Cost",
+        "Shower Estimated Cost"
+      ],
+      "image_labels": [
+        "Shower Image",
+        "Upload Shower Image"
+      ],
+      "aliases": [
+        "shower",
+        "shower curtain",
+        "curtain rod"
+      ]
+    },
+    {
+      "key": "toilet",
+      "name": "Toilet",
+      "yes_no_question": "Is There Damages To The Toilet?",
+      "description_labels": [
+        "Toilet Description",
+        "Describe The Damage To The Toilet"
+      ],
+      "cost_labels": [
+        "Toilet Cost",
+        "Toilet Estimated Cost"
+      ],
+      "image_labels": [
+        "Toilet Image",
+        "Upload Toilet Image"
+      ],
+      "aliases": [
+        "toilet",
+        "bathroom toilet"
+      ]
+    },
+    {
+      "key": "towel_rack",
+      "name": "Towel Rack",
+      "yes_no_question": "Is There Damages To The Towel Rack?",
+      "description_labels": [
+        "Towel Rack Description",
+        "Describe The Damage To The Towel Rack"
+      ],
+      "cost_labels": [
+        "Towel Rack Cost",
+        "Towel Rack Estimated Cost"
+      ],
+      "image_labels": [
+        "Towel Rack Image",
+        "Upload Towel Rack Image"
+      ],
+      "aliases": [
+        "towel rack",
+        "towel bar",
+        "hand dryer",
+        "sanitary napkin receptacle"
       ]
     }
   ]

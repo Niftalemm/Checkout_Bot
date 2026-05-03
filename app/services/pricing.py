@@ -188,6 +188,27 @@ class PricingEngine:
                 "sprinkler",
                 "sprinkler head",
             ],
+            "sink": [
+                "sink",
+                "faucet",
+                "tap",
+                "medicine cabinet",
+                "mirror",
+            ],
+            "shower": [
+                "shower",
+                "shower curtain",
+                "curtain rod",
+            ],
+            "toilet": [
+                "toilet",
+            ],
+            "towel_rack": [
+                "towel rack",
+                "towel bar",
+                "hand dryer",
+                "sanitary napkin receptacle",
+            ],
         }
         measurement_words = {"inch", "inches", "ft", "foot", "feet", "sq", "square"}
         score = 0.0
@@ -256,6 +277,15 @@ class PricingEngine:
             return next(section for section in self._sections if section["key"] == "lighting")
         if form_section == "safety":
             return next(section for section in self._sections if section["key"] == "fire_safety")
+        if form_section == "bathroom":
+            if any(term in row_text for term in ["shower", "curtain rod"]):
+                return next(section for section in self._sections if section["key"] == "shower")
+            if "toilet" in row_text:
+                return next(section for section in self._sections if section["key"] == "toilet")
+            if any(term in row_text for term in ["towel", "hand dryer", "napkin receptacle"]):
+                return next(section for section in self._sections if section["key"] == "towel_rack")
+            if any(term in row_text for term in ["sink", "faucet", "mirror", "medicine cabinet"]):
+                return next(section for section in self._sections if section["key"] == "sink")
         if row.get("form_section", "").lower() == "paint":
             if "room number" in row_text or "entry" in row_text:
                 return next(section for section in self._sections if section["key"] == "entry_surround")
@@ -319,7 +349,7 @@ class PricingEngine:
             "hvac": ["heating_cooling"],
             "electrical": ["electrical", "lighting"],
             "network": ["electrical"],
-            "bathroom": ["bathroom_door"],
+            "bathroom": ["sink", "shower", "toilet", "towel_rack"],
             "safety": ["fire_safety"],
             "walls": ["wall_surfaces", "entry_surround"],
             "flooring": ["floor_surfaces"],

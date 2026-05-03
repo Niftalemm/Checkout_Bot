@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -25,6 +26,7 @@ class CheckoutSession(Base):
     form_fill_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     form_fill_result: Mapped[str | None] = mapped_column(Text, nullable=True)
     draft_saved: Mapped[bool] = mapped_column(Boolean, default=False)
+    scheduled_checkout_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     damage_items: Mapped[list["DamageItem"]] = relationship(
@@ -122,3 +124,27 @@ class DamageImage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     damage_item: Mapped[DamageItem] = relationship(back_populates="images")
+
+
+class ScheduledCheckout(Base):
+    __tablename__ = "scheduled_checkouts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    resident_name: Mapped[str] = mapped_column(String(120))
+    tech_id: Mapped[str] = mapped_column(String(40))
+    room_number: Mapped[str] = mapped_column(String(20))
+    hall: Mapped[str] = mapped_column(String(80))
+    room_side: Mapped[str] = mapped_column(String(20))
+    checkout_time: Mapped[datetime] = mapped_column(DateTime, index=True)
+    timezone: Mapped[str] = mapped_column(String(64), default="America/Chicago")
+    creator_discord_user_id: Mapped[str] = mapped_column(String(80), index=True)
+    creator_display_name: Mapped[str] = mapped_column(String(120))
+    discord_channel_id: Mapped[str] = mapped_column(String(80), index=True)
+    status: Mapped[str] = mapped_column(String(40), default="scheduled", index=True)
+    reminder_30_sent: Mapped[bool] = mapped_column(Boolean, default=False)
+    reminder_10_sent: Mapped[bool] = mapped_column(Boolean, default=False)
+    reminder_at_time_sent: Mapped[bool] = mapped_column(Boolean, default=False)
+    ready_to_start_notified: Mapped[bool] = mapped_column(Boolean, default=False)
+    started_session_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

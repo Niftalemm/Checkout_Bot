@@ -40,6 +40,9 @@ FORM_FILL_PARTIAL_FAILURE = "partial_failure"
 FORM_FILL_FAILED = "failed"
 FORM_FILL_SKIPPED = "skipped"
 
+CAPTURE_STATUS_AWAITING_DESCRIPTION = "awaiting_description"
+CAPTURE_STATUS_PENDING = "pending"
+
 
 class ServiceError(Exception):
     def __init__(self, message: str, status_code: int = 400):
@@ -108,7 +111,12 @@ class CheckoutService:
             raise ServiceError("Damage item not found for this session.", status_code=404)
         return item
 
-    def _get_pending_capture_for_update(self, session_id: int, capture_id: int) -> PendingDamageCapture:
+    def _get_pending_capture_for_update(
+        self,
+        session_id: int,
+        capture_id: int,
+        allowed_statuses: tuple[str, ...] = (CAPTURE_STATUS_PENDING,),
+    ) -> PendingDamageCapture:
         capture = (
             self.db.execute(
                 select(PendingDamageCapture)
@@ -116,7 +124,7 @@ class CheckoutService:
                 .where(
                     PendingDamageCapture.id == capture_id,
                     PendingDamageCapture.session_id == session_id,
-                    PendingDamageCapture.status == "pending",
+                    PendingDamageCapture.status.in_(allowed_statuses),
                 )
             )
             .unique()
@@ -181,17 +189,49 @@ class CheckoutService:
     def _pending_capture_state(self, capture: PendingDamageCapture) -> PendingCaptureState:
         suggestions = self._load_suggestions(capture.suggestion_options_json)
         return PendingCaptureState(
+            status=capture.status,
+            awaiting_description=capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION,
             capture_id=capture.id,
-            original_description=capture.raw_note,
-            cleaned_description=capture.cleaned_description,
-            quantity=capture.quantity,
-            unit_cost=capture.unit_cost,
-            total_cost=capture.total_cost,
-            chargeable=capture.chargeable,
-            guessed_category_key=capture.suggested_section,
-            guessed_category_name=capture.suggested_category,
-            guessed_confidence=capture.suggested_confidence,
+            original_description=capture.raw_note or None,
+            cleaned_description=capture.cleaned_description or None,
+            quantity=None if capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION else capture.quantity,
+            unit_cost=None if capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION else capture.unit_cost,
+            total_cost=None if capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION else capture.total_cost,
+            chargeable=None if capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION else capture.chargeable,
+            guessed_category_key=capture.suggested_section or None,
+            guessed_category_name=capture.suggested_category or None,
+            guessed_confidence=(
+                None if capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION else capture.suggested_confidence
+            ),
             suggestions=suggestions,
+            image_count=len(capture.images),
+        )
+
+    def _capture_response(
+        self,
+        capture: PendingDamageCapture,
+        suggestions: list[DamageSuggestion] | None = None,
+        requires_explicit_choice: bool = False,
+        prompt: str = "",
+    ) -> PendingDamageCaptureResponse:
+        awaiting_description = capture.status == CAPTURE_STATUS_AWAITING_DESCRIPTION
+        return PendingDamageCaptureResponse(
+            status=capture.status,
+            awaiting_description=awaiting_description,
+            capture_id=capture.id,
+            original_description=capture.raw_note or None,
+            cleaned_description=capture.cleaned_description or None,
+            quantity=None if awaiting_description else capture.quantity,
+            unit_cost=None if awaiting_description else capture.unit_cost,
+            total_cost=None if awaiting_description else capture.total_cost,
+            chargeable=None if awaiting_description else capture.chargeable,
+            guessed_category_key=capture.suggested_section or None,
+            guessed_category_name=capture.suggested_category or None,
+            guessed_confidence=None if awaiting_description else capture.suggested_confidence,
+            estimated_cost=None if awaiting_description else capture.total_cost,
+            suggestions=suggestions or [],
+            requires_explicit_choice=requires_explicit_choice,
+            prompt=prompt,
             image_count=len(capture.images),
         )
 
@@ -283,7 +323,9 @@ class CheckoutService:
                 .options(joinedload(PendingDamageCapture.images))
                 .where(
                     PendingDamageCapture.session_id == session_id,
-                    PendingDamageCapture.status == "pending",
+                    PendingDamageCapture.status.in_(
+                        [CAPTURE_STATUS_PENDING, CAPTURE_STATUS_AWAITING_DESCRIPTION]
+                    ),
                 )
                 .order_by(PendingDamageCapture.created_at.desc())
             )
@@ -307,11 +349,67 @@ class CheckoutService:
             )
 
         note = raw_note.strip()
+        uploads = list(image_files or [])
+        primary_image_name = (image_name_hints or [None])[0]
+        if not note and not uploads:
+            raise ServiceError("Send at least one image or a short description.", status_code=400)
+
         if not note:
-            raise ServiceError("Each damage report needs a short description.", status_code=400)
+            capture = PendingDamageCapture(
+                session_id=session_id,
+                raw_note="",
+                cleaned_description="",
+                quantity=1,
+                unit_cost=0.0,
+                total_cost=0.0,
+                chargeable=True,
+                parsed_item=None,
+                parsed_damage_type=None,
+                parsed_confidence=None,
+                image_temp_path="",
+                suggested_category="",
+                suggested_section="",
+                suggested_confidence=0.0,
+                suggested_cost=0.0,
+                pricing_name=None,
+                ai_provider=None,
+                ai_model=None,
+                suggestion_options_json="[]",
+                image_name_hint=primary_image_name,
+                status=CAPTURE_STATUS_AWAITING_DESCRIPTION,
+            )
+            session.form_fill_status = FORM_FILL_NOT_REQUESTED
+            session.form_fill_error = None
+            session.form_fill_result = None
+            self.db.add(capture)
+            self.db.flush()
+
+            for index, image_file in enumerate(uploads):
+                try:
+                    image_path, stored_name = self.image_store.save_pending_image(
+                        image_file,
+                        session_id,
+                        "unclassified",
+                    )
+                except ValueError as exc:
+                    raise ServiceError(str(exc), status_code=400) from exc
+                capture.images.append(
+                    PendingDamageImage(
+                        pending_capture_id=capture.id,
+                        file_path=image_path,
+                        sort_order=index,
+                    )
+                )
+                if index == 0:
+                    capture.image_temp_path = image_path
+                    capture.image_name_hint = stored_name
+
+            self._sync_pending_image_path(capture)
+            self.db.commit()
+            self.db.refresh(capture)
+            return self._capture_response(capture, prompt="Awaiting description.")
 
         analysis = self._analyze_damage(note)
-        primary_image_name = (image_name_hints or [None])[0]
         suggestions = self.pricing.suggest(note, image_name_hint=primary_image_name, analysis=analysis, limit=3)
         primary = suggestions[0]
 
@@ -336,7 +434,7 @@ class CheckoutService:
             ai_model=analysis.model,
             suggestion_options_json=self._dump_suggestions(self._serialize_damage_suggestions(suggestions)),
             image_name_hint=primary_image_name,
-            status="pending",
+            status=CAPTURE_STATUS_PENDING,
         )
         session.form_fill_status = FORM_FILL_NOT_REQUESTED
         session.form_fill_error = None
@@ -344,7 +442,7 @@ class CheckoutService:
         self.db.add(capture)
         self.db.flush()
 
-        for index, image_file in enumerate(image_files or []):
+        for index, image_file in enumerate(uploads):
             try:
                 image_path, stored_name = self.image_store.save_pending_image(
                     image_file, session_id, primary.category_key
@@ -366,27 +464,20 @@ class CheckoutService:
         self.db.commit()
         self.db.refresh(capture)
 
-        return PendingDamageCaptureResponse(
-            capture_id=capture.id,
-            original_description=capture.raw_note,
-            cleaned_description=capture.cleaned_description,
-            quantity=capture.quantity,
-            unit_cost=capture.unit_cost,
-            total_cost=capture.total_cost,
-            chargeable=capture.chargeable,
-            guessed_category_key=primary.category_key,
-            guessed_category_name=primary.category_name,
-            guessed_confidence=primary.confidence,
-            estimated_cost=capture.total_cost,
+        return self._capture_response(
+            capture,
             suggestions=self._serialize_damage_suggestions(suggestions),
             requires_explicit_choice=primary.confidence < 0.6,
             prompt=self._prompt_for_suggestions(primary),
-            image_count=len(capture.images),
         )
 
     def add_pending_capture_image(self, session_id: int, capture_id: int, image_file) -> PendingCaptureState:
         self._require_active_session(session_id)
-        capture = self._get_pending_capture_for_update(session_id, capture_id)
+        capture = self._get_pending_capture_for_update(
+            session_id,
+            capture_id,
+            allowed_statuses=(CAPTURE_STATUS_PENDING, CAPTURE_STATUS_AWAITING_DESCRIPTION),
+        )
         primary_category_key = capture.suggested_section or "unclassified"
 
         try:
@@ -408,9 +499,90 @@ class CheckoutService:
         self.db.refresh(capture)
         return self._pending_capture_state(capture)
 
+    def describe_pending_capture(
+        self,
+        session_id: int,
+        capture_id: int,
+        raw_note: str,
+        audio_file=None,
+    ) -> PendingDamageCaptureResponse:
+        self._require_active_session(session_id)
+        capture = self._get_pending_capture_for_update(
+            session_id,
+            capture_id,
+            allowed_statuses=(CAPTURE_STATUS_AWAITING_DESCRIPTION,),
+        )
+
+        note = raw_note.strip()
+        if not note and audio_file is not None:
+            if self.ai_service is None:
+                raise ServiceError(
+                    "Voice note transcription is not configured yet. Send a text description instead.",
+                    status_code=400,
+                )
+            payload = audio_file.file.read()
+            try:
+                note = self.ai_service.transcribe_audio(
+                    audio_file.filename or "voice-note.m4a",
+                    payload,
+                    audio_file.content_type,
+                )
+            except ValueError as exc:
+                raise ServiceError(str(exc), status_code=400) from exc
+
+        note = note.strip()
+        if not note:
+            raise ServiceError(
+                "Send a short text description or a voice note so I can match this damage.",
+                status_code=400,
+            )
+
+        analysis = self._analyze_damage(note)
+        primary_image_name = capture.image_name_hint
+        suggestions = self.pricing.suggest(note, image_name_hint=primary_image_name, analysis=analysis, limit=3)
+        primary = suggestions[0]
+
+        capture.raw_note = note
+        capture.cleaned_description = analysis.cleaned_description
+        capture.quantity = primary.quantity
+        capture.unit_cost = primary.unit_cost
+        capture.total_cost = primary.total_cost
+        capture.chargeable = primary.chargeable
+        capture.parsed_item = analysis.item
+        capture.parsed_damage_type = analysis.damage_type
+        capture.parsed_confidence = analysis.confidence
+        capture.suggested_category = primary.category_name
+        capture.suggested_section = primary.category_key
+        capture.suggested_confidence = primary.confidence
+        capture.suggested_cost = primary.total_cost
+        capture.pricing_name = primary.pricing_name
+        capture.ai_provider = analysis.provider
+        capture.ai_model = analysis.model
+        capture.suggestion_options_json = self._dump_suggestions(
+            self._serialize_damage_suggestions(suggestions)
+        )
+        capture.status = CAPTURE_STATUS_PENDING
+
+        ordered_images = sorted(capture.images, key=lambda image: (image.sort_order, image.id))
+        if ordered_images and not capture.image_name_hint:
+            capture.image_name_hint = ordered_images[0].file_path.replace("\\", "/").rsplit("/", 1)[-1]
+
+        self.db.commit()
+        self.db.refresh(capture)
+        return self._capture_response(
+            capture,
+            suggestions=self._serialize_damage_suggestions(suggestions),
+            requires_explicit_choice=primary.confidence < 0.6,
+            prompt=self._prompt_for_suggestions(primary),
+        )
+
     def cancel_pending_capture(self, session_id: int, capture_id: int) -> None:
         self._require_active_session(session_id)
-        capture = self._get_pending_capture_for_update(session_id, capture_id)
+        capture = self._get_pending_capture_for_update(
+            session_id,
+            capture_id,
+            allowed_statuses=(CAPTURE_STATUS_PENDING, CAPTURE_STATUS_AWAITING_DESCRIPTION),
+        )
         for image in capture.images:
             self.image_store.delete_image_file(image.file_path)
         self.db.delete(capture)

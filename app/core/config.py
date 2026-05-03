@@ -17,13 +17,18 @@ class Settings(BaseSettings):
     microsoft_form_url: str = ""
     playwright_storage_state_path: str = "runtime/playwright/storage_state.json"
     playwright_headless: bool = False
+    playwright_debug: bool = False
+    playwright_debug_dir: str = "runtime/playwright/debug"
     playwright_manual_review_timeout_seconds: int = 900
+    playwright_auto_submit_headless: bool = True
     default_has_bathroom: bool = True
     auto_fill_on_complete: bool = False
+    standalone_reminders_enabled: bool = False
     voice_note_require_text: bool = True
     groq_api_key: str = ""
     groq_base_url: str = "https://api.groq.com/openai/v1"
     groq_model: str = "openai/gpt-oss-20b"
+    groq_transcription_model: str = "whisper-large-v3-turbo"
     groq_timeout_seconds: int = 20
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
